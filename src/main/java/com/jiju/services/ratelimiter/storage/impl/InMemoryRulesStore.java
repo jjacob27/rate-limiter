@@ -4,6 +4,8 @@ import com.jiju.services.ratelimiter.beans.Rule;
 import com.jiju.services.ratelimiter.interfaces.RulesStore;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +16,14 @@ public class InMemoryRulesStore implements RulesStore {
     @Override
     public Rule getRuleForRequestPattern(String requestPattern) {
         return rulesStore.get(requestPattern);
+    }
+
+    @Override
+    public List<Rule> getAllRules(){
+        List<Rule> l = new ArrayList<>();
+        for(String key: rulesStore.keySet())
+            l.add(rulesStore.get(key));
+        return l;
     }
 
     @Override

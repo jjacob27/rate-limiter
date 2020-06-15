@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class  TokenBucketBasedRateLimiter implements RateLimiter {
@@ -71,10 +69,12 @@ public class  TokenBucketBasedRateLimiter implements RateLimiter {
         }
         Integer tokensAvailableCurrently = tb.getTokensAvailable()+
                 Long.valueOf((diff*limitDuration.getLimit())).intValue();
+        System.out.println("Currently available tokens ="+tokensAvailableCurrently);
 
-        if(tokensAvailableCurrently > throttlingRule.getNumTokensPerRequest())
+        int numTokenRequiredForThisRequest = throttlingRule.getNumTokensPerRequest();
+        if(tokensAvailableCurrently >= numTokenRequiredForThisRequest)
         {
-            tb.setTokensAvailable(tokensAvailableCurrently);
+            tb.setTokensAvailable(tokensAvailableCurrently-numTokenRequiredForThisRequest);
             tb.setLastUpdatedTime(now);
             tokenBucketStore.setTokenBucket(tb.getTokenIdentifier(),tb);
             return true;
