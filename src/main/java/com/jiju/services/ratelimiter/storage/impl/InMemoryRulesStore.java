@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@SuppressWarnings("unused")
 public class InMemoryRulesStore implements RulesStore {
     private Map<String, Rule> rulesStore=new ConcurrentHashMap<>();
 

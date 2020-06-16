@@ -10,10 +10,10 @@ import com.jiju.services.ratelimiter.interfaces.tokenbucket.TokenBucketStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Service
+@SuppressWarnings("unused")
 public class  TokenBucketBasedRateLimiter implements RateLimiter {
 
     @Autowired
@@ -28,8 +28,6 @@ public class  TokenBucketBasedRateLimiter implements RateLimiter {
 
     @Override
     public boolean allowRequest(String requestUrl)  {
-        boolean allowRequest = true;
-
         Rule throttlingRule = rulesStore.getRuleForRequestPattern(requestUrl);
         if(throttlingRule!=null){
             String tokenBucketId = tokenBucketIdGenerator
@@ -38,12 +36,12 @@ public class  TokenBucketBasedRateLimiter implements RateLimiter {
             if(tb==null){
                 tb = tokenBucketStore.createTokenBucket(tokenBucketId, throttlingRule);
             }
-            return allocateTokens(tb, throttlingRule);
+            return allocateToken(tb, throttlingRule);
         }
-        return allowRequest;
+        return true;
     }
 
-    boolean allocateTokens(TokenBucket tb, Rule throttlingRule){
+    boolean allocateToken(TokenBucket tb, Rule throttlingRule){
         LimitDuration limitDuration = throttlingRule.getLimit();
         if(limitDuration.getLimit() <= 0)
         {
@@ -54,33 +52,67 @@ public class  TokenBucketBasedRateLimiter implements RateLimiter {
         LocalDateTime lastUpdatedTime =tb.getLastUpdatedTime();
         LocalDateTime now = LocalDateTime.now();
 
-        Duration duration = Duration.between(lastUpdatedTime, now);
-        long diff = 0;
-        switch(limitDuration.getTimePeriod()){
-            case MINUTE:
-                diff = duration.toMinutes();
-                break;
-            case HOUR:
-                diff = duration.toHours();
-                break;
-            case DAY:
-                diff = duration.toDays();
-                break;
+        if(determineIfThisRequestIsInSameWindowAsLastRequest(limitDuration, lastUpdatedTime, now)){
+            int tokensAvailable = tb.getTokensAvailable();
+            if(tokensAvailable>=throttlingRule.getNumTokensPerRequest())
+            {
+                allocateTokenForRequest(tb, throttlingRule, now, tokensAvailable);
+                return true;
+            }
+            else {
+                return false;
+            }
         }
-        Integer tokensAvailableCurrently = tb.getTokensAvailable()+
-                Long.valueOf((diff*limitDuration.getLimit())).intValue();
-        System.out.println("Currently available tokens ="+tokensAvailableCurrently);
-
-        int numTokenRequiredForThisRequest = throttlingRule.getNumTokensPerRequest();
-        if(tokensAvailableCurrently >= numTokenRequiredForThisRequest)
-        {
-            tb.setTokensAvailable(tokensAvailableCurrently-numTokenRequiredForThisRequest);
-            tb.setLastUpdatedTime(now);
-            tokenBucketStore.setTokenBucket(tb.getTokenIdentifier(),tb);
+        else {
+            int tokensAvailable = limitDuration.getLimit();
+            allocateTokenForRequest(tb, throttlingRule, now, tokensAvailable);
             return true;
         }
-        else
-            return false;
+    }
+
+    private void allocateTokenForRequest(TokenBucket tb, Rule throttlingRule, LocalDateTime now, int tokensAvailable) {
+        tokensAvailable -= throttlingRule.getNumTokensPerRequest();
+        tb.setLastUpdatedTime(now);
+        tb.setTokensAvailable(tokensAvailable);
+        tokenBucketStore.setTokenBucket(tb.getTokenIdentifier(), tb);
+    }
+
+    private boolean determineIfThisRequestIsInSameWindowAsLastRequest(LimitDuration limitDuration, LocalDateTime lastUpdatedTime, LocalDateTime now) {
+        boolean requestInSameWindowAsLastRequest = false;
+        switch (limitDuration.getTimePeriod()){
+            case MINUTE:
+                if(lastUpdatedTime.getYear()==now.getYear() &&
+                        lastUpdatedTime.getDayOfYear() == now.getDayOfYear() &&
+                            lastUpdatedTime.getHour() == now.getHour() &&
+                                lastUpdatedTime.getMinute() == now.getMinute())
+                    requestInSameWindowAsLastRequest =true;
+                break;
+
+            case HOUR:
+                if(lastUpdatedTime.getYear()==now.getYear() &&
+                        lastUpdatedTime.getDayOfYear() == now.getDayOfYear() &&
+                        lastUpdatedTime.getHour() == now.getHour())
+                    requestInSameWindowAsLastRequest = true;
+                break;
+
+            case DAY:
+                if(lastUpdatedTime.getYear()==now.getYear() &&
+                        lastUpdatedTime.getDayOfYear() == now.getDayOfYear())
+                    requestInSameWindowAsLastRequest = true;
+                break;
+
+            case MONTH:
+                if(lastUpdatedTime.getYear()==now.getYear() &&
+                        lastUpdatedTime.getMonth() == now.getMonth())
+                    requestInSameWindowAsLastRequest = true;
+                break;
+
+            case YEAR:
+                if(lastUpdatedTime.getYear()==now.getYear())
+                    requestInSameWindowAsLastRequest = true;
+                break;
+        }
+        return requestInSameWindowAsLastRequest;
     }
 
     @Override

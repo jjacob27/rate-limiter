@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/test")
 public class TestApiController {
 
-
     @RateLimit(limit=2, duration = DurationUnit.MINUTE)
    @GetMapping("/t1")
     public ResponseEntity m1(){

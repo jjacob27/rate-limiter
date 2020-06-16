@@ -10,8 +10,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@SuppressWarnings("unused")
 public class InMemoryTokenBucketStore implements TokenBucketStore {
-    Map<String, TokenBucket> tokenBucketStore = new ConcurrentHashMap<>();
+    private Map<String, TokenBucket> tokenBucketStore = new ConcurrentHashMap<>();
 
     @Override
     public TokenBucket createTokenBucket(String tokenBucketIdentifier, Rule r) {

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/rule")
+@SuppressWarnings("unused")
 public class RulesController {
 
     @Autowired
