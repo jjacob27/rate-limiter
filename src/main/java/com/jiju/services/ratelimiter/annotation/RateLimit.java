@@ -15,4 +15,6 @@ public @interface RateLimit {
     int limit() default 5;
     DurationUnit duration() default DurationUnit.MINUTE;
     int numTokensPerRequest() default 1;
+    boolean differentiateByUser() default false;
+    boolean differentiateByTenant() default false;
 }

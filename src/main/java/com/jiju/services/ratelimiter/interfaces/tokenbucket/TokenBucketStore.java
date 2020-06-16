@@ -4,7 +4,7 @@ import com.jiju.services.ratelimiter.beans.Rule;
 import com.jiju.services.ratelimiter.beans.TokenBucket;
 
 public interface TokenBucketStore {
-    TokenBucket createTokenBucket(String tokenBucketIdentifier, Rule throttlingRule);
-    TokenBucket getTokenBucket(String tokenBucketIdentifier);
-    void setTokenBucket(String tokenBucketIdentifier, TokenBucket bucket);
+    TokenBucket createTokenBucket(String identifier, Rule throttlingRule);
+    TokenBucket getTokenBucket(String identifier);
+    void setTokenBucket(String identifier, TokenBucket bucket);
 }

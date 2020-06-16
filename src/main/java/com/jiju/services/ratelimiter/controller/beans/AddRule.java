@@ -12,9 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddRule {
-    int requestMaxLimit;
-    DurationUnit durationUnit;
-    String pathPattern;
-    int numTokensPerRequest;
-    Strategy strategy;
+    private int requestMaxLimit;
+    private DurationUnit durationUnit;
+    private String pathPattern;
+    private Strategy strategy;
+    private boolean differentiateUsers;
+    private boolean differentiateTenants;
 }

@@ -5,6 +5,8 @@ import com.jiju.services.ratelimiter.beans.LimitDuration;
 import com.jiju.services.ratelimiter.beans.Rule;
 import com.jiju.services.ratelimiter.interfaces.RateLimiter;
 import com.jiju.services.ratelimiter.interfaces.RulesStore;
+import lombok.Getter;
+import lombok.Setter;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,13 +20,15 @@ import java.util.Optional;
 
 @Aspect
 @Component
+@Getter
+@Setter
 public class RateLimitAspect {
 
     @Autowired
-    RulesStore rulesStore;
+    private RulesStore rulesStore;
 
     @Autowired
-    List<RateLimiter> rateLimiters;
+    private List<RateLimiter> rateLimiters;
 
     @Around(value="@annotation(rateLimit)")
     public Object limitRequests(ProceedingJoinPoint jp, RateLimit rateLimit) throws Throwable {
@@ -37,8 +41,9 @@ public class RateLimitAspect {
 
         String methodName="method://"+jp.getSignature().toLongString();
         Rule addRule = Rule.builder().requestMatchPattern(methodName)
-                .numTokensPerRequest(rateLimit.numTokensPerRequest())
                 .strategy(rateLimit.strategy())
+                .differentiateUsers(rateLimit.differentiateByUser())
+                .differentiateTenants(rateLimit.differentiateByTenant())
                 .limit(ld).build();
 
         Rule existingRule=rulesStore.getRuleForRequestPattern(methodName);
