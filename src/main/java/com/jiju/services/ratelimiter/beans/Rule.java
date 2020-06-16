@@ -12,7 +12,11 @@ public class Rule {
     private Strategy strategy;
     private LimitDuration limit;
 
-    @Builder.Default
-    private int numTokensPerRequest = 1;
     private String requestMatchPattern;
+
+    @Builder.Default
+    private boolean differentiateUsers = false;
+
+    @Builder.Default
+    private boolean differentiateTenants = false;
 }

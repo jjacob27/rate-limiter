@@ -29,8 +29,9 @@ public class RulesController {
                     .timePeriod(ar.getDurationUnit())
                     .build();
             Rule r = Rule.builder().requestMatchPattern(ar.getPathPattern())
-                    .numTokensPerRequest(ar.getNumTokensPerRequest())
                     .strategy(Strategy.TOKEN_BUCKET)
+                    .differentiateTenants(ar.isDifferentiateTenants())
+                    .differentiateUsers(ar.isDifferentiateUsers())
                     .limit(ld).build();
             rulesStore.addRule(r);
         } catch (Exception e){

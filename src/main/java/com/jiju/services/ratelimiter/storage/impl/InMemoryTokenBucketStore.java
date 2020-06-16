@@ -15,22 +15,22 @@ public class InMemoryTokenBucketStore implements TokenBucketStore {
     private Map<String, TokenBucket> tokenBucketStore = new ConcurrentHashMap<>();
 
     @Override
-    public TokenBucket createTokenBucket(String tokenBucketIdentifier, Rule r) {
+    public TokenBucket createTokenBucket(String identifier, Rule r) {
         TokenBucket tb=TokenBucket.builder().lastUpdatedTime(LocalDateTime.now())
-                .tokenIdentifier(tokenBucketIdentifier)
-                .tokensAvailable(r.getNumTokensPerRequest()*r.getLimit().getLimit())
+                .tokenIdentifier(identifier)
+                .tokensAvailable(r.getLimit().getLimit())
                 .build();
-        tokenBucketStore.put(tokenBucketIdentifier,tb);
+        tokenBucketStore.put(identifier,tb);
         return tb;
     }
 
     @Override
-    public TokenBucket getTokenBucket(String tokenBucketIdentifier) {
-        return tokenBucketStore.get(tokenBucketIdentifier);
+    public TokenBucket getTokenBucket(String identifier) {
+        return tokenBucketStore.get(identifier);
     }
 
     @Override
-    public void setTokenBucket(String tokenBucketIdentifier, TokenBucket bucket) {
-        tokenBucketStore.put(tokenBucketIdentifier,bucket);
+    public void setTokenBucket(String identifier, TokenBucket bucket) {
+        tokenBucketStore.put(identifier,bucket);
     }
 }
