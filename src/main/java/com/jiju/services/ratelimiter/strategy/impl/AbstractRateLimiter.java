@@ -9,18 +9,18 @@ import java.time.LocalDateTime;
 
 public abstract class AbstractRateLimiter implements RateLimiter {
     @Autowired
-    IdGenerator<String> idGenerator;
+    private IdGenerator<String> idGenerator;
 
     @Autowired
-    RulesStore rulesStore;
+    protected RulesStore rulesStore;
 
     @Autowired(required = false)
-    TenantDifferentiator tenantDifferentiator;
+    private TenantDifferentiator tenantDifferentiator;
 
     @Autowired(required = false)
-    UserDifferentiator userDifferentiator;
+    private UserDifferentiator userDifferentiator;
 
-    protected String getIdentifier(Rule rule) {
+    String getIdentifier(Rule rule) {
         String input = rule.getRequestMatchPattern();
         if (rule.isDifferentiateTenants() && tenantDifferentiator != null)
             input = input + "##" + tenantDifferentiator.getTenantId();
@@ -32,41 +32,30 @@ public abstract class AbstractRateLimiter implements RateLimiter {
                 .generateId(input);
     }
 
-    protected boolean determineIfThisRequestIsInSameWindowAsLastRequest(LimitDuration limitDuration, LocalDateTime lastUpdatedTime, LocalDateTime now) {
-        boolean requestInSameWindowAsLastRequest = false;
+    boolean isRequestInSameWindowAsLastOne(LimitDuration limitDuration, LocalDateTime lastUpdatedTime, LocalDateTime now) {
         switch (limitDuration.getTimePeriod()) {
             case MINUTE:
-                if (lastUpdatedTime.getYear() == now.getYear() &&
+                return (lastUpdatedTime.getYear() == now.getYear() &&
                         lastUpdatedTime.getDayOfYear() == now.getDayOfYear() &&
                         lastUpdatedTime.getHour() == now.getHour() &&
-                        lastUpdatedTime.getMinute() == now.getMinute())
-                    requestInSameWindowAsLastRequest = true;
-                break;
+                        lastUpdatedTime.getMinute() == now.getMinute());
 
             case HOUR:
-                if (lastUpdatedTime.getYear() == now.getYear() &&
+                return (lastUpdatedTime.getYear() == now.getYear() &&
                         lastUpdatedTime.getDayOfYear() == now.getDayOfYear() &&
-                        lastUpdatedTime.getHour() == now.getHour())
-                    requestInSameWindowAsLastRequest = true;
-                break;
+                        lastUpdatedTime.getHour() == now.getHour());
 
             case DAY:
-                if (lastUpdatedTime.getYear() == now.getYear() &&
-                        lastUpdatedTime.getDayOfYear() == now.getDayOfYear())
-                    requestInSameWindowAsLastRequest = true;
-                break;
+                return (lastUpdatedTime.getYear() == now.getYear() &&
+                        lastUpdatedTime.getDayOfYear() == now.getDayOfYear());
 
             case MONTH:
-                if (lastUpdatedTime.getYear() == now.getYear() &&
-                        lastUpdatedTime.getMonth() == now.getMonth())
-                    requestInSameWindowAsLastRequest = true;
-                break;
+                return (lastUpdatedTime.getYear() == now.getYear() &&
+                        lastUpdatedTime.getMonth() == now.getMonth());
 
             case YEAR:
-                if (lastUpdatedTime.getYear() == now.getYear())
-                    requestInSameWindowAsLastRequest = true;
-                break;
+                return (lastUpdatedTime.getYear() == now.getYear());
         }
-        return requestInSameWindowAsLastRequest;
+        return false;
     }
 }

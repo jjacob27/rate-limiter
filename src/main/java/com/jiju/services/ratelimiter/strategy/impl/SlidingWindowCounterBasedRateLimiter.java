@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 public class SlidingWindowCounterBasedRateLimiter extends AbstractRateLimiter {
 
     @Autowired
-    SlidingWindowStore swStore;
+    private SlidingWindowStore swStore;
 
     @Override
     public boolean allowRequest(String requestUrl) {
@@ -40,11 +40,11 @@ public class SlidingWindowCounterBasedRateLimiter extends AbstractRateLimiter {
         LocalDateTime lastUpdatedTime =sw.getLastUpdatedTime();
         LocalDateTime now = LocalDateTime.now();
 
-        boolean isRequestInSameWindow = determineIfThisRequestIsInSameWindowAsLastRequest(limitDuration,lastUpdatedTime,now);
+        boolean isRequestInSameWindow = isRequestInSameWindowAsLastOne(limitDuration,lastUpdatedTime,now);
 
         if(isRequestInSameWindow){
             long requestsAlreadyServiced = sw.getRequests().stream()
-                    .map(a->a.getCounter())
+                    .map(SlidingWindowItem::getCounter)
                     .reduce(0L,(a,b)->a+b);
             if(requestsAlreadyServiced+1 <= limitDuration.getLimit()){
                 return addItemToSlidingWindow(sw, now);

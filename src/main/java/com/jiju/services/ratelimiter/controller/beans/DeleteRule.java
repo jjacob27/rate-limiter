@@ -10,5 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeleteRule {
-    String requestPattern;
+    private String requestPattern;
 }

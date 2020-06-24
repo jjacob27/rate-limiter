@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/test")
 public class TestApiController {
+    // TODO: Move this class to the tests folder.
 
     @RateLimit(limit=2, duration = DurationUnit.MINUTE)
     @GetMapping("/t1")

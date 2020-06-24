@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class RulesController {
 
     @Autowired
-    RulesStore rulesStore;
+    private RulesStore rulesStore;
 
     @PostMapping(path="/add", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity addRule(@RequestBody AddRule ar){
@@ -50,10 +50,10 @@ public class RulesController {
         }catch (Exception e){
             return new ResponseEntity(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/getAll")
+    @GetMapping("/all")
     public ResponseEntity getAllRules(){
         return new ResponseEntity(rulesStore.getAllRules(),HttpStatus.OK);
     }

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class  TokenBucketBasedRateLimiter extends AbstractRateLimiter {
 
     @Autowired
-    TokenBucketStore tokenBucketStore;
+    private TokenBucketStore tokenBucketStore;
 
     @Override
     public boolean allowRequest(String requestUrl)  {
@@ -42,7 +42,7 @@ public class  TokenBucketBasedRateLimiter extends AbstractRateLimiter {
         LocalDateTime lastUpdatedTime =tb.getLastUpdatedTime();
         LocalDateTime now = LocalDateTime.now();
 
-        if(determineIfThisRequestIsInSameWindowAsLastRequest(limitDuration, lastUpdatedTime, now)){
+        if(isRequestInSameWindowAsLastOne(limitDuration, lastUpdatedTime, now)){
             int tokensAvailable = tb.getTokensAvailable();
             if(tokensAvailable>0)
             {
